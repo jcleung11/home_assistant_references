@@ -27,5 +27,48 @@ Properly grouping assets allows you to target groups of devices in automations a
 - **Better for:** Logic that requires comparing several device states as one unit in an automation.
 - *Contrast:* Unlike Area or Label, Group Integration does not provide UI filtering/organization logic; it is strictly a logical grouping tool.
 
+## Switch as Light (Smart Switches → Light Entities)
+
+Smart switches (relays, wall switches) create `switch.*` entities by default. To make them appear as lights in the UI, create template light entities that wrap them.
+
+### Correct Syntax (HA 2026.6+)
+
+Use the top-level `template:` key with the modern format (full docs: https://www.home-assistant.io/integrations/template/):
+
+```yaml
+template:
+  - light:
+      - name: "Lights Dining Table"
+        unique_id: lights_dining_table
+        state: "{{ is_state('switch.lights_dining_table', 'on') }}"
+        turn_on:
+          action: switch.turn_on
+          target:
+            entity_id: switch.lights_dining_table
+        turn_off:
+          action: switch.turn_off
+          target:
+            entity_id: switch.lights_dining_table
+```
+
+This creates `light.lights_dining_table` that mirrors the switch's on/off state.
+
+### Deprecated Syntaxes (DO NOT USE)
+
+These were removed and will cause config errors in HA 2026.6+:
+
+| Deprecated Syntax | Removed In | Notes |
+|---|---|---|
+| `light:` → `platform: switch` | HA 2024.12 | Old switch-as-light YAML format |
+| `light:` → `platform: template` → `lights:` | HA 2026.6 | Legacy template entity format |
+| `switch_as_x:` YAML config | Never supported | `switch_as_x` is UI-only (Helpers → Switch as X) |
+
+### UI-Only Alternative
+
+For simple cases without YAML, create helpers directly in the UI:
+**Settings → Devices & Services → Helpers → Create Helper → Switch as X**
+
+Select the switch entity and choose "Light" as the target type. Repeat per switch.
+
 ---
-*Last updated: 2026-06-18 | Reference for Home Assistant version 2026.6.4*
+*Last updated: 2026-06-20 | Reference for Home Assistant version 2026.6.4*
